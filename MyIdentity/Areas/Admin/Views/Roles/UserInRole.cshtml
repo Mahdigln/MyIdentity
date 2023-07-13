@@ -1,19 +1,20 @@
 ﻿@model IEnumerable<MyIdentity.Areas.Admin.Models.Dto.UserListDto>
 
 @{
-    ViewData["Title"] = "Index";
-    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "UserInRole";
 }
 
-<h1>Index</h1>
+<h1>UserInRole</h1>
 
 <p>
-    <a asp-area="admin" asp-controller="Users" asp-action="Create">Create New</a>
+    <a asp-action="Create">Create New</a>
 </p>
 <table class="table">
     <thead>
         <tr>
-            
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.FirstName)
             </th>
@@ -26,19 +27,21 @@
             <th>
                 @Html.DisplayNameFor(model => model.PhoneNumber)
             </th>
-            <th>
+            @*<th>
                 @Html.DisplayNameFor(model => model.EmailConfirmed)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.AccessFailedCount)
-            </th>
+            </th>*@
             <th></th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
-           
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.FirstName)
             </td>
@@ -51,19 +54,13 @@
             <td>
                 @Html.DisplayFor(modelItem => item.PhoneNumber)
             </td>
-            <td>
+           @* <td>
                 @Html.DisplayFor(modelItem => item.EmailConfirmed)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.AccessFailedCount)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit","Users", new { id=item.Id ,area="Admin"}) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete","Users",new { id=item.Id,area="Admin"})
-                @Html.ActionLink("AddRole", "AddUserRole","Users",new { id=item.Id,area="Admin"})
-                @Html.ActionLink("UserRoles", "UserRoles","Users",new { id=item.Id,area="Admin"})
-            </td>
+            </td>*@
+            
         </tr>
 }
     </tbody>
