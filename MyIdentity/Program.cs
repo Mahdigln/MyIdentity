@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyIdentity.Data;
+using MyIdentity.Helpers;
 using MyIdentity.Models.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +21,8 @@ builder.Services.AddDbContext<DataBaseContext>(options =>
 /*builder.Services.AddIdentity<IdentityUser, IdentityRole>();*/ //if you didn't add custom user & Role Use this
 builder.Services.AddIdentity<User, Role>()
     .AddEntityFrameworkStores<DataBaseContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddErrorDescriber<CustomIdentityError>();
 
 #endregion
 var app = builder.Build();
