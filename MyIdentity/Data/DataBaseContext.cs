@@ -19,6 +19,6 @@ public class DataBaseContext: IdentityDbContext<User,Role,string>
         modelBuilder.Entity<IdentityUserRole<string>>().HasKey(p => new { p.UserId, p.RoleId });
         modelBuilder.Entity<IdentityUserToken<string>>().HasKey(p => new { p.UserId, p.LoginProvider });
 
-        modelBuilder.Entity<User>().Ignore(p => p.NormalizedEmail);
+        //modelBuilder.Entity<User>().Ignore(p => p.NormalizedEmail);
     }
 }

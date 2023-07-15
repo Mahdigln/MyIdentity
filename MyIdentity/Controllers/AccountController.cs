@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MyIdentity.Models.Dto;
+using MyIdentity.Models.Dto.Account;
 using MyIdentity.Models.Entities;
 using MyIdentity.Services;
 
@@ -158,6 +159,87 @@ public class AccountController : Controller
     {
         _signInManager.SignOutAsync();
         return RedirectToAction("Index", "home");
+    }
+
+
+    public IActionResult ForgotPassword()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult ForgotPassword(ForgotPasswordConfirmationDto forgot)
+    {
+        if (!ModelState.IsValid)
+        {
+
+            return View(forgot);
+        }
+
+        var user = _userManager.FindByEmailAsync(forgot.Email).Result;
+        if (user == null || _userManager.IsEmailConfirmedAsync(user).Result == false)
+        {
+            ViewBag.meesage = "ممکن است ایمیل وارد شده معتبر نباشد! و یا اینکه ایمیل خود را تایید نکرده باشید";
+            return View();
+        }
+
+        string token = _userManager.GeneratePasswordResetTokenAsync(user).Result;
+        string callbakUrl = Url.Action("ResetPassword", "Account", new
+        {
+            UserId = user.Id,
+            token = token
+        }, protocol: Request.Scheme);
+
+        string body = $"برای تنظیم مجدد کلمه عبور بر روی لینک زیر کلیک کنید <br/> <a href={callbakUrl}> link reset Password </a>";
+        //_emailService.Execute(user.Email, body, "فراموشی رمز عبور");
+        EmailService.Send(user.Email,"فراموشی رمز عبور",body);
+        ViewBag.meesage = "لینک تنظیم مجدد کلمه عبور برای ایمیل شما ارسال شد";
+        return View();
+    }
+
+
+    public IActionResult ResetPassword(string UserId, string Token)
+    {
+        return View(new ResetPasswordDto
+        {
+            Token = Token,
+            UserId = UserId,
+        });
+    }
+
+    [HttpPost]
+    public IActionResult ResetPassword(ResetPasswordDto reset)
+    {
+        if (!ModelState.IsValid)
+            return View(reset);
+        if (reset.Password != reset.ConfirmPassword)
+        {
+            return BadRequest();
+        }
+        var user = _userManager.FindByIdAsync(reset.UserId).Result;
+        if (user == null)
+        {
+            return BadRequest();
+        }
+
+        var Result = _userManager.ResetPasswordAsync(user, reset.Token, reset.Password).Result;
+
+        if (Result.Succeeded)
+        {
+            return RedirectToAction(nameof(ResetPasswordConfirmation));
+
+        }
+        else
+        {
+            ViewBag.Errors = Result.Errors;
+            return View(reset);
+        }
+
+    }
+
+    public IActionResult ResetPasswordConfirmation()
+    {
+        return View();
     }
 }
 
