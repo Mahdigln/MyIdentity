@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MyIdentity.Models.Dto;
 using MyIdentity.Models.Dto.Account;
@@ -238,6 +239,62 @@ public class AccountController : Controller
     }
 
     public IActionResult ResetPasswordConfirmation()
+    {
+        return View();
+    }
+
+
+    [Authorize]
+    public IActionResult SetPhoneNumber()
+    {
+        return View();
+    }
+
+    [Authorize]
+    [HttpPost]
+    public IActionResult SetPhoneNumber(SetPhoneNumberDto phoneNumberDto)
+    {
+        var user = _userManager.FindByNameAsync(User.Identity.Name).Result;
+        var setResult = _userManager.SetPhoneNumberAsync(user, phoneNumberDto.PhoneNumber).Result;
+        string code = _userManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumberDto.PhoneNumber).Result;
+        SmsService smsService = new SmsService();
+        smsService.Send(phoneNumberDto.PhoneNumber, code);
+        TempData["PhoneNumber"] = phoneNumberDto.PhoneNumber;
+        return RedirectToAction(nameof(VerifyPhoneNumber));
+    }
+
+    [Authorize]
+    public IActionResult VerifyPhoneNumber()
+    {
+
+        return View(new VerifyPhoneNumberDto
+        {
+            PhoneNumber = TempData["PhoneNumber"].ToString(),
+        });
+    }
+
+    [Authorize]
+    [HttpPost]
+    public IActionResult VerifyPhoneNumber(VerifyPhoneNumberDto verify)
+    {
+        var user = _userManager.FindByNameAsync(User.Identity.Name).Result;
+        bool resultVerify = _userManager.VerifyChangePhoneNumberTokenAsync(user, verify.Code, verify.PhoneNumber).Result;
+        if (resultVerify == false)
+        {
+            ViewData["Message"] = $"کد وارد شده برای شماره {verify.PhoneNumber} اشتباه اشت";
+            return View(verify);
+        }
+        else
+        {
+            user.PhoneNumberConfirmed = true;
+            _userManager.UpdateAsync(user);
+        }
+        return RedirectToAction("VerifySuccess");
+
+    }
+
+
+    public IActionResult VerifySuccess()
     {
         return View();
     }
