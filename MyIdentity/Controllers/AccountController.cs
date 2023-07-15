@@ -12,7 +12,7 @@ public class AccountController : Controller
 {
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
-   // private readonly EmailService _emailService;
+    // private readonly EmailService _emailService;
 
     public AccountController(UserManager<User> userManager, SignInManager<User> signInManager/*, EmailService emailService*/ )
     {
@@ -20,9 +20,30 @@ public class AccountController : Controller
         _signInManager = signInManager;
         //_emailService = new EmailService();;
     }
+    [Authorize]
     public IActionResult Index()
     {
-        return View();
+        var user = _userManager.FindByNameAsync(User.Identity.Name).Result;
+        MyAccountinfoDto myAccount = new MyAccountinfoDto()
+        {
+            Email = user.Email,
+            EmailConfirmed = user.EmailConfirmed,
+            FullName = $"{user.FirstName} {user.LastName}",
+            Id = user.Id,
+            PhoneNumber = user.PhoneNumber,
+            PhoneNumberConfirmed = user.PhoneNumberConfirmed,
+            TwoFactorEnabled = user.TwoFactorEnabled,
+            UserName = user.UserName,
+        };
+        return View(myAccount);
+    }
+
+    [Authorize]
+    public IActionResult TwoFactorEnabled()
+    {
+        var user = _userManager.FindByNameAsync(User.Identity.Name).Result;
+        var Result = _userManager.SetTwoFactorEnabledAsync(user, !user.TwoFactorEnabled).Result;
+        return RedirectToAction(nameof(Index));
     }
 
     public IActionResult Register()
@@ -43,7 +64,7 @@ public class AccountController : Controller
             LastName = register.LastName,
             Email = register.Email,
             UserName = register.Email,
-            
+
         };
 
         var result = _userManager.CreateAsync(newUser, register.Password).Result;
@@ -59,7 +80,7 @@ public class AccountController : Controller
             }, protocol: Request.Scheme);
 
             string body = $"لطفا برای فعال حساب کاربری بر روی لینک زیر کلیک کنید!  <br/> <a href={callbackUrl}> Link </a>";
-                EmailService.Send(newUser.Email, "فعال سازی حساب کاربری", body);
+            EmailService.Send(newUser.Email, "فعال سازی حساب کاربری", body);
 
 
             #region . کد اموزش برا سرویس ایمیل ک کار نکرد بالای صفحه هم سرویس ایمیل کامنت شد
@@ -71,7 +92,7 @@ public class AccountController : Controller
             return RedirectToAction("DisplayEmail");
 
             //return RedirectToAction("Index", "Home");
-            
+
         }
 
         string message = "";
@@ -138,13 +159,18 @@ public class AccountController : Controller
         var result = _signInManager.PasswordSignInAsync(user, login.Password, login.IsPersistent
             , true).Result;
 
+
         if (result.Succeeded == true)
         {
             return Redirect(login.ReturnUrl);
         }
         if (result.RequiresTwoFactor == true)
         {
-            //
+            return RedirectToAction("TwoFactorLogin", new
+            {
+                login.UserName,
+                login.IsPersistent
+            });
         }
         if (result.IsLockedOut)
         {
@@ -153,6 +179,76 @@ public class AccountController : Controller
 
         ModelState.AddModelError(string.Empty, "Login  Error");
         return View();
+    }
+
+    public IActionResult TwoFactorLogin(string UserName, bool IsPersistent)
+    {
+        var user = _userManager.FindByNameAsync(UserName).Result;
+        if (user == null)
+        {
+            return BadRequest();
+        }
+
+        var providers = _userManager.GetValidTwoFactorProvidersAsync(user).Result;
+
+        TwoFactorLoginDto model = new TwoFactorLoginDto();
+        if (providers.Contains("Phone"))
+        {
+            string smsCode = _userManager.GenerateTwoFactorTokenAsync(user, "Phone").Result;
+
+            SmsService smsService = new SmsService();
+            smsService.Send(user.PhoneNumber, smsCode);
+            model.Provider = "Phone";
+            model.IsPersistent = IsPersistent;
+
+        }
+        else if (providers.Contains("Email"))
+        {
+            string emailCode = _userManager.GenerateTwoFactorTokenAsync(user, "Email").Result;
+            //EmailService emailService = new EmailService();
+            //emailService.Execute(user.Email, $"Two Factor Code:{emailCode}", "Two Factor Login");
+
+            EmailService.Send(user.Email, "Two Factor Login", $"Two Factor Code:{emailCode}");
+
+            model.Provider = "Email";
+            model.IsPersistent = IsPersistent;
+        }
+
+
+        return View(model);
+    }
+
+
+    [HttpPost]
+    public IActionResult TwoFactorLogin(TwoFactorLoginDto twoFactor)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(twoFactor);
+        }
+
+        var user = _signInManager.GetTwoFactorAuthenticationUserAsync().Result;
+        if (user == null)
+        {
+            return BadRequest();
+        }
+
+        var result = _signInManager.TwoFactorSignInAsync(twoFactor.Provider, twoFactor.Code, twoFactor.IsPersistent, false).Result;
+
+        if (result.Succeeded)
+        {
+            return RedirectToAction("index");
+        }
+        else if (result.IsLockedOut)
+        {
+            ModelState.AddModelError("", "حساب کاربری شما قفل شده است");
+            return View();
+        }
+        else
+        {
+            ModelState.AddModelError("", "کد وارد شده صحیح نیست ");
+            return View();
+        }
     }
 
 
@@ -193,7 +289,7 @@ public class AccountController : Controller
 
         string body = $"برای تنظیم مجدد کلمه عبور بر روی لینک زیر کلیک کنید <br/> <a href={callbakUrl}> link reset Password </a>";
         //_emailService.Execute(user.Email, body, "فراموشی رمز عبور");
-        EmailService.Send(user.Email,"فراموشی رمز عبور",body);
+        EmailService.Send(user.Email, "فراموشی رمز عبور", body);
         ViewBag.meesage = "لینک تنظیم مجدد کلمه عبور برای ایمیل شما ارسال شد";
         return View();
     }
