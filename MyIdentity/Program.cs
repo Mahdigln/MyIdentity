@@ -22,7 +22,8 @@ builder.Services.AddDbContext<DataBaseContext>(options =>
 builder.Services.AddIdentity<User, Role>()
     .AddEntityFrameworkStores<DataBaseContext>()
     .AddDefaultTokenProviders()
-    .AddErrorDescriber<CustomIdentityError>();
+    .AddErrorDescriber<CustomIdentityError>()
+    .AddPasswordValidator<MyPasswordValidator>();
 
 builder.Services.Configure<IdentityOptions>(option =>
 {
