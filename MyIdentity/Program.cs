@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyIdentity.Data;
@@ -22,6 +23,7 @@ builder.Services.AddDbContext<DataBaseContext>(options =>
 builder.Services.AddIdentity<User, Role>()
     .AddEntityFrameworkStores<DataBaseContext>()
     .AddDefaultTokenProviders()
+    .AddRoles<Role>()
     .AddErrorDescriber<CustomIdentityError>()
     .AddPasswordValidator<MyPasswordValidator>();
 
@@ -74,6 +76,7 @@ builder.Services.ConfigureApplicationCookie(option =>
 #region IOC
 
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, AddMyClaims>();
+builder.Services.AddScoped<IClaimsTransformation,AddMyClaims.AddClaim>();
 
 #endregion
 var app = builder.Build();
