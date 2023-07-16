@@ -24,6 +24,50 @@ builder.Services.AddIdentity<User, Role>()
     .AddDefaultTokenProviders()
     .AddErrorDescriber<CustomIdentityError>();
 
+builder.Services.Configure<IdentityOptions>(option =>
+{
+    //UserSetting
+    //option.User.AllowedUserNameCharacters = "abcd123";
+    option.User.RequireUniqueEmail = true;
+
+    //Password Setting
+    option.Password.RequireDigit = false;
+    option.Password.RequireLowercase = false;
+    option.Password.RequireNonAlphanumeric = false;//!@#$%^&*()_+
+    option.Password.RequireUppercase = false;
+    option.Password.RequiredLength = 8;
+    option.Password.RequiredUniqueChars = 1;
+
+    //Lokout Setting
+    option.Lockout.MaxFailedAccessAttempts = 3;
+    option.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+
+    //SignIn Setting
+    option.SignIn.RequireConfirmedAccount = false;
+    option.SignIn.RequireConfirmedEmail = false;
+    option.SignIn.RequireConfirmedPhoneNumber = false;
+
+
+   
+
+
+
+});
+
+#endregion
+
+#region Authentication
+
+builder.Services.ConfigureApplicationCookie(option =>
+{
+    // cookie setting
+    option.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+
+    option.LoginPath = "/account/login";
+    option.AccessDeniedPath = "/Account/AccessDenied";
+    option.SlidingExpiration = true; //because you set LoginPath=10min it means if user didn't do anything it will logout after 10min
+});
+
 #endregion
 var app = builder.Build();
 
