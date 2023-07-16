@@ -43,7 +43,11 @@ namespace MyIdentity.Controllers
             return "Ap and O";
         }
 
-
+        [Authorize(Policy = "Cradit")]
+        public string Credit()
+        {
+            return "ok";
+        }
 
     }
 }

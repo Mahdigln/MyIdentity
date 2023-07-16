@@ -33,6 +33,9 @@ public class AddMyClaims : UserClaimsPrincipalFactory<User>
                 if (identity != null)
                 {
                     identity.AddClaim(new Claim("TestClaim", "Yes", ClaimValueTypes.String));
+
+                    identity.AddClaim(new Claim("Cradit", "10000", ClaimValueTypes.String));
+
                 }
             }
 

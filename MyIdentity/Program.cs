@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyIdentity.Data;
@@ -81,8 +82,13 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("BloodType", policy =>
     {
         policy.RequireClaim("Blood", "Ap", "Op");
-    }
-    );
+    });
+
+    options.AddPolicy("Cradit", policy =>
+    {
+        policy.Requirements.Add(new UserCreditRequerment(10000));
+    });
+
 });
 
 #endregion
@@ -91,7 +97,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, AddMyClaims>();
 builder.Services.AddScoped<IClaimsTransformation,AddMyClaims.AddClaim>();
-
+builder.Services.AddSingleton<IAuthorizationHandler, UserCreditHandler>();
 #endregion
 var app = builder.Build();
 
