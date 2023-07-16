@@ -394,5 +394,12 @@ public class AccountController : Controller
     {
         return View();
     }
+    [AllowAnonymous]
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
+
+
 }
 

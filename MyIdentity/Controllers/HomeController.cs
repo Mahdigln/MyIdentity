@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MyIdentity.Models;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyIdentity.Controllers
 {
@@ -28,5 +29,21 @@ namespace MyIdentity.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+
+        [Authorize(Policy = "Buyer")]
+        public string JustBuyer()
+        {
+            return "شما خریدار هستید";
+        }
+
+        [Authorize(Policy = "BloodType")]
+        public string Blood()
+        {
+            return "Ap and O";
+        }
+
+
+
     }
 }

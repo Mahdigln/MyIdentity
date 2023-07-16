@@ -71,6 +71,20 @@ builder.Services.ConfigureApplicationCookie(option =>
     option.SlidingExpiration = true; //because you set LoginPath=10min it means if user didn't do anything it will logout after 10min
 });
 
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Buyer", policy =>
+    {
+        policy.RequireClaim("Buyer");
+    });
+    options.AddPolicy("BloodType", policy =>
+    {
+        policy.RequireClaim("Blood", "Ap", "Op");
+    }
+    );
+});
+
 #endregion
 
 #region IOC
