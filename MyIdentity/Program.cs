@@ -70,6 +70,12 @@ builder.Services.ConfigureApplicationCookie(option =>
 });
 
 #endregion
+
+#region IOC
+
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, AddMyClaims>();
+
+#endregion
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
