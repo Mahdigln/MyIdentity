@@ -94,6 +94,11 @@ builder.Services.AddAuthorization(options =>
         policy.AddRequirements(new BlogRequirement());
     });
 
+    options.AddPolicy("AdminUsers", policy =>
+    {
+        policy.RequireRole("Admin");
+    });
+
 });
 
 #endregion
