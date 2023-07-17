@@ -89,15 +89,21 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new UserCreditRequerment(10000));
     });
 
+    options.AddPolicy("IsBlogForUser", policy =>
+    {
+        policy.AddRequirements(new BlogRequirement());
+    });
+
 });
 
 #endregion
 
 #region IOC
 
-builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, AddMyClaims>();
+//builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, AddMyClaims>();
 builder.Services.AddScoped<IClaimsTransformation,AddMyClaims.AddClaim>();
 builder.Services.AddSingleton<IAuthorizationHandler, UserCreditHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, IsBlogForUserAuthorizationHandler>();
 #endregion
 var app = builder.Build();
 
