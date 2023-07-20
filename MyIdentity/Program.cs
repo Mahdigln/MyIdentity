@@ -103,6 +103,19 @@ builder.Services.AddAuthorization(options =>
 
 #endregion
 
+
+#region Externall Login
+
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+        {
+            options.ClientId = "test";
+            options.ClientSecret = "test";
+        }
+    );
+
+#endregion
+
 #region IOC
 
 //builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, AddMyClaims>();
